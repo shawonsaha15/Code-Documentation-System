@@ -1,8 +1,8 @@
 # CodeDocs: An Automated Code Documentation System
-Ever had the feeling how a certain code works when browsing others’ projects or when you are developing your own, you can’t seem to understand the code snippet you have managed to gather that might help you? Even when working with teams, sometimes it gets troublesome understanding the members’ codes and situations might arise where one might not be able to ask that person about it. <br>
-<br>
-So, how to solve this? <br>
-<br>
+Ever had the feeling how a certain code works when browsing others’ projects or when you are developing your own, you can’t seem to understand the code snippet you have managed to gather that might help you? Even when working with teams, sometimes it gets troublesome understanding the members’ codes and situations might arise where one might not be able to ask that person about it. 
+
+So, how to solve this?
+
 Some would say copy the code and ask in community forums or use search engines. But customized codes would be very difficult to find and it would also take long time to get forum replies. Now, with the emergence of artificial intelligence, others would suggest using Large Language Models (LLMs) but even with this, one would need proper prompting ability.
 
 That’s where my CodeDocs comes!

@@ -193,30 +193,30 @@ analysis_method = st.sidebar.radio("Use RAG enhancement?", ["Yes", "No"])
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Code Analysis")
+st.sidebar.button("Analyze Code")
 
 code_snippet = st.text_area("Enter or paste your code here:", height=300)
 
 if code_snippet:
-    if st.sidebar.button("Analyze Code"):
-        with st.spinner("Storing code and generating explanation..."):
-            # Store code for RAG enhancement
-            try:
-                store_code_snippet(code_snippet)
-                st.success("Code stored successfully.")
-            except Exception as e:
-                st.warning(f"Could not store code in vector database. Error: {e}")
+    with st.spinner("Storing code and generating explanation..."):
+        # Store code for RAG enhancement
+        try:
+            store_code_snippet(code_snippet)
+            st.success("Code stored successfully.")
+        except Exception as e:
+            st.warning(f"Could not store code in vector database. Error: {e}")
 
-            # Generate explanation
-            try:
-                if analysis_method == "Yes":
-                    explanation = rag_enhanced_explanation(code_snippet, output_format)
-                    st.subheader("RAG-Enhanced Explanation")
-                else:
-                    explanation = generate_code_explanation(code_snippet, output_format)
-                    st.subheader("Basic Explanation")
+        # Generate explanation
+        try:
+            if analysis_method == "Yes":
+                explanation = rag_enhanced_explanation(code_snippet, output_format)
+                st.subheader("RAG-Enhanced Explanation")
+            else:
+                explanation = generate_code_explanation(code_snippet, output_format)
+                st.subheader("Basic Explanation")
 
-                st.json(explanation, expanded=True)
-                st.info(f"Evaluation: {evaluate_explanation_quality(explanation)}")
+            st.json(explanation, expanded=True)
+            st.info(f"Evaluation: {evaluate_explanation_quality(explanation)}")
 
-            except Exception as e:
-                st.error(f"Error generating explanation: {e}")
+        except Exception as e:
+            st.error(f"Error generating explanation: {e}")

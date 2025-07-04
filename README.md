@@ -1,4 +1,5 @@
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://codedocs-assistant.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://codedocs-assistant.streamlit.app/) [![View on Kaggle](https://img.shields.io/badge/Kaggle-View-blue?logo=kaggle)](https://www.kaggle.com/code/swapnilsahashawon/code-documentation-system)
+
 
 # CodeDocs: An Automated Code Documentation System
 Ever had the feeling how a certain code works when browsing others’ projects or when you are developing your own, you can’t seem to understand the code snippet you have managed to gather that might help you? Even when working with teams, sometimes it gets troublesome understanding the members’ codes and situations might arise where one might not be able to ask that person about it. 
@@ -31,5 +32,3 @@ Features:
 All in all, I had a great time developing this fun CodeDocs project. Whether you are a solo dev, building tools for teams, or want to have a fun time understanding code, or just tired of writing docstrings — CodeDocs has your back.
 
 Interested in trying it or contributing? Let’s connect!
-
-Have a peek: https://www.kaggle.com/code/swapnilsahashawon/code-documentation-system

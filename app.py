@@ -215,7 +215,12 @@ if code_snippet:
                 explanation = generate_code_explanation(code_snippet, output_format)
                 st.subheader("Basic Explanation")
 
-            st.json(explanation, expanded=True)
+            if output_format.lower() == "story":
+                st.markdown("### 📖 Story Explanation")
+                st.write(explanation.get("story", "No story output available."))
+            else:
+                st.markdown("### 🧾 JSON Explanation")
+                st.json(explanation, expanded=True)
             st.info(f"Evaluation: {evaluate_explanation_quality(explanation)}")
 
         except Exception as e:

@@ -1,3 +1,5 @@
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://codedocs-assistant.streamlit.app/)
+
 # CodeDocs: An Automated Code Documentation System
 Ever had the feeling how a certain code works when browsing others’ projects or when you are developing your own, you can’t seem to understand the code snippet you have managed to gather that might help you? Even when working with teams, sometimes it gets troublesome understanding the members’ codes and situations might arise where one might not be able to ask that person about it. 
 

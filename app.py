@@ -5,9 +5,14 @@ import numpy as np
 import google.generativeai as genai
 import re
 import streamlit as st
+import logging
+from typing import List, Dict, Any
+
+# Set up logging for debugging
+logging.basicConfig(level=logging.INFO)
 
 # Set up Streamlit app layout
-st.title("CodeDocs - An Automated Code Documentation System")
+st.title("Code Documentation Assistant")
 
 # Initialize the Gemini model with the API key from environment variable
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -38,44 +43,49 @@ Response:
 }
 """
 
-def generate_code_explanation(code_snippet: str, output_format="json"):
-    if output_format.lower() == "json":
-        prompt = f"""
-        You are a code documentation assistant. Respond only in JSON with:
-        - summary
-        - functions (name and description)
-        - missing docstrings
-        - potential improvements
+# Function to generate code explanation
+def generate_code_explanation(code_snippet: str, output_format="json") -> Dict[str, Any]:
+    """Generates a structured explanation of the provided code snippet."""
+    try:
+        if output_format.lower() == "json":
+            prompt = f"""
+            You are a code documentation assistant. Respond only in JSON with:
+            - summary
+            - functions (name and description)
+            - missing docstrings
+            - potential improvements
 
-        {FEW_SHOT_EXAMPLES}
+            {FEW_SHOT_EXAMPLES}
 
-        Now analyze this code:
+            Now analyze this code:
 
-        Code:
-        {code_snippet}
-        """
-    else:  # Story format
-        prompt = f"""
-        You are a code documentation assistant. Analyze the following code and explain it as a story
-        in a creative, engaging way. Make the explanation accessible while still being technically accurate.
-        Include information about:
-        - What the code does
-        - The functions and their purpose
-        - Any missing documentation
-        - Potential improvements
+            Code:
+            {code_snippet}
+            """
+        else:  # Story format
+            prompt = f"""
+            You are a code documentation assistant. Analyze the following code and explain it as a story
+            in a creative, engaging way. Make the explanation accessible while still being technically accurate.
+            Include information about:
+            - What the code does
+            - The functions and their purpose
+            - Any missing documentation
+            - Potential improvements
 
-        Code:
-        {code_snippet}
-        """
+            Code:
+            {code_snippet}
+            """
 
-    response = model.generate_content(prompt)
+        response = model.generate_content(prompt)
+        return extract_json_from_response(response.text) if output_format.lower() == "json" else {"story": response.text}
+    
+    except Exception as e:
+        logging.error(f"Error generating explanation: {e}")
+        return {"error": f"Error generating explanation: {e}"}
 
-    if output_format.lower() == "json":
-        return extract_json_from_response(response.text)
-    else:
-        return {"story": response.text}
-
-def extract_json_from_response(text):
+# Function to extract JSON from model response
+def extract_json_from_response(text: str) -> Dict[str, Any]:
+    """Attempts to extract JSON from the model's response."""
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -88,29 +98,37 @@ def extract_json_from_response(text):
                 pass
         return {"error": "Model output not valid JSON", "raw_output": text}
 
-def get_code_embedding(code_snippet: str):
-    response = genai.embed_content(
-        model="models/embedding-001",
-        content=code_snippet,
-        task_type="retrieval_document"
-    )
-    return response['embedding']
+# Function to fetch code embeddings
+def get_code_embedding(code_snippet: str) -> List[float]:
+    """Fetches embedding for the given code snippet."""
+    try:
+        response = genai.embed_content(model="models/embedding-001", content=code_snippet, task_type="retrieval_document")
+        return response['embedding']
+    except Exception as e:
+        logging.error(f"Error generating embedding: {e}")
+        return []
 
 embedding_dimension = 768
 embedding_index = faiss.IndexFlatL2(embedding_dimension)
 code_snippets = []
 
-def store_code_snippet(code_snippet: str):
+# Function to store code snippets in the vector index
+def store_code_snippet(code_snippet: str) -> None:
+    """Stores the code snippet embedding into the index."""
     embedding = np.array([get_code_embedding(code_snippet)]).astype("float32")
     embedding_index.add(embedding)
     code_snippets.append(code_snippet)
 
-def search_similar_code(query_snippet: str, top_k=1):
+# Function to search for similar code snippets
+def search_similar_code(query_snippet: str, top_k=1) -> List[str]:
+    """Searches for the most similar code snippets based on embeddings."""
     query_embedding = np.array([get_code_embedding(query_snippet)]).astype("float32")
     D, I = embedding_index.search(query_embedding, top_k)
     return [code_snippets[i] for i in I[0]]
 
-def rag_enhanced_explanation(query_code: str, output_format="json"):
+# Function to enhance explanation using RAG (Retrieval-Augmented Generation)
+def rag_enhanced_explanation(query_code: str, output_format="json") -> Dict[str, Any]:
+    """Generates an enhanced explanation by using similar code snippets as context."""
     similar_snippets = search_similar_code(query_code)
     context = "\n\n".join(similar_snippets)
 
@@ -146,14 +164,16 @@ def rag_enhanced_explanation(query_code: str, output_format="json"):
         Include information about what the code does, its functions, any missing documentation, and potential improvements.
         """
 
-    response = model.generate_content(combined_prompt)
+    try:
+        response = model.generate_content(combined_prompt)
+        return extract_json_from_response(response.text) if output_format.lower() == "json" else {"story": response.text}
+    except Exception as e:
+        logging.error(f"Error generating RAG-enhanced explanation: {e}")
+        return {"error": f"Error generating explanation: {e}"}
 
-    if output_format.lower() == "json":
-        return extract_json_from_response(response.text)
-    else:
-        return {"story": response.text}
-
-def evaluate_explanation_quality(explanation: dict):
+# Function to evaluate the explanation quality
+def evaluate_explanation_quality(explanation: Dict[str, Any]) -> str:
+    """Evaluates the quality of the generated explanation."""
     if "error" in explanation:
         return f"Error in explanation: {explanation['error']}"
     elif "story" in explanation:
@@ -165,45 +185,34 @@ def evaluate_explanation_quality(explanation: dict):
         return "Good summary"
     return "Summary is too short or missing"
 
-def print_explanation(explanation, output_format):
-    if output_format.lower() == "json":
-        st.json(explanation, expanded=True)
-    else:
-        if "story" in explanation:
-            st.write("\n--- CODE STORY ---\n")
-            st.write(explanation["story"])
-            st.write("\n-----------------\n")
-        else:
-            st.write("Error generating story format")
-            st.write(explanation)
-
 # Streamlit interface
 code_snippet = st.text_area("Enter or paste your code here:", height=300)
 
 if code_snippet:
-    output_format = st.selectbox("Choose output format:", ["JSON", "STORY"])
+    output_format = st.selectbox("Choose output format:", ["json", "story"])
 
     analysis_method = st.radio("Use RAG enhancement?", ["Yes", "No"])
 
     if st.button("Analyze Code"):
-        # Store code for RAG enhancement
-        try:
-            store_code_snippet(code_snippet)
-            st.success("Code stored successfully.")
-        except Exception as e:
-            st.warning(f"Could not store code in vector database. Error: {e}")
+        with st.spinner("Storing code and generating explanation..."):
+            # Store code for RAG enhancement
+            try:
+                store_code_snippet(code_snippet)
+                st.success("Code stored successfully.")
+            except Exception as e:
+                st.warning(f"Could not store code in vector database. Error: {e}")
 
-        # Generate explanation
-        try:
-            if analysis_method == "Yes":
-                explanation = rag_enhanced_explanation(code_snippet, output_format)
-                st.subheader("RAG-Enhanced Explanation")
-            else:
-                explanation = generate_code_explanation(code_snippet, output_format)
-                st.subheader("Basic Explanation")
+            # Generate explanation
+            try:
+                if analysis_method == "Yes":
+                    explanation = rag_enhanced_explanation(code_snippet, output_format)
+                    st.subheader("RAG-Enhanced Explanation")
+                else:
+                    explanation = generate_code_explanation(code_snippet, output_format)
+                    st.subheader("Basic Explanation")
 
-            print_explanation(explanation, output_format)
-            st.info(f"Evaluation: {evaluate_explanation_quality(explanation)}")
+                st.json(explanation, expanded=True)
+                st.info(f"Evaluation: {evaluate_explanation_quality(explanation)}")
 
-        except Exception as e:
-            st.error(f"Error generating explanation: {e}")
+            except Exception as e:
+                st.error(f"Error generating explanation: {e}")

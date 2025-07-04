@@ -12,7 +12,8 @@ from typing import List, Dict, Any
 logging.basicConfig(level=logging.INFO)
 
 # Set up Streamlit app layout
-st.title("Code Documentation Assistant")
+st.title("CodeDocs")
+st.subheader("An Automated Code Documentation System")
 
 # Initialize the Gemini model with the API key from environment variable
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -186,14 +187,17 @@ def evaluate_explanation_quality(explanation: Dict[str, Any]) -> str:
     return "Summary is too short or missing"
 
 # Streamlit interface
+st.sidebar.title("Settings")
+output_format = st.sidebar.selectbox("Choose output format:", ["JSON", "STORY"])
+analysis_method = st.sidebar.radio("Use RAG enhancement?", ["Yes", "No"])
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("Code Analysis")
+
 code_snippet = st.text_area("Enter or paste your code here:", height=300)
 
 if code_snippet:
-    output_format = st.selectbox("Choose output format:", ["json", "story"])
-
-    analysis_method = st.radio("Use RAG enhancement?", ["Yes", "No"])
-
-    if st.button("Analyze Code"):
+    if st.sidebar.button("Analyze Code"):
         with st.spinner("Storing code and generating explanation..."):
             # Store code for RAG enhancement
             try:

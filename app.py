@@ -193,11 +193,10 @@ analysis_method = st.sidebar.radio("Use RAG enhancement?", ["Yes", "No"])
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Code Analysis")
-st.sidebar.button("Analyze Code")
 
 code_snippet = st.text_area("Enter or paste your code here:", height=300)
 
-if code_snippet:
+if st.sidebar.button("Analyze Code"):
     with st.spinner("Storing code and generating explanation..."):
         # Store code for RAG enhancement
         try:

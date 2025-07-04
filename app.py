@@ -4,11 +4,11 @@ import re
 import faiss
 import numpy as np
 import streamlit as st
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import google.generativeai as genai
 
 # Load API Key from .env file
-load_dotenv()
+#load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-2.0-flash')
 
